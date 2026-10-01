@@ -29,6 +29,20 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def canonical_date(value: str) -> str:
+    """把 YYYY-MM-DD 或带时区的时刻归一化为 UTC 日期字符串。"""
+    if not isinstance(value, str) or not value.strip():
+        raise ValidationError("日期不能为空")
+    text = value.strip()
+    if len(text) == 10:
+        try:
+            datetime.strptime(text, "%Y-%m-%d")
+        except ValueError as exc:
+            raise ValidationError("日期必须使用 YYYY-MM-DD 格式") from exc
+        return text
+    return parse_instant(text).date().isoformat()
+
+
 @dataclass(frozen=True)
 class Clock:
     fixed: str | None = None
